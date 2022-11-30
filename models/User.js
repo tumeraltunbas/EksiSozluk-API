@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs") //importing bcryptjs library for password hashing
+const jsonwebtoken = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema({ //UserSchema is new mongoose.Schema
     username:{
@@ -83,6 +84,30 @@ UserSchema.pre("save", function(next)
     this.password = hashedPassword; //we changed user's password with hashedPassword.
     next(); //continue to saving process
 });
+
+UserSchema.methods.createJwt = (payload) => //there are some method belong to schemas. But we can write new methods here.
+{
+    //We gonna write a function that gonna create a jwt
+    /*
+    To create JWT, we need to follow some steps
+    1- Create Payload
+    2- Secret Key
+    3- JWT Expires
+    */
+    const {JWT_SECRET,JWT_EXPIRES} = process.env;
+    const accessToken = jsonwebtoken.sign(payload, JWT_SECRET, {expiresIn:JWT_EXPIRES});
+    return accessToken; //we need to return accessToken because we gonna save this token value to cookie.
+}
+
+UserSchema.methods.createPayload = function()
+{
+    //The payload contains some information about user. This payload makes all jwts unique. Each user informations are different. Thus each jwt will be different.
+    const payload = {
+        id:this._id,
+        username:this.username
+    }
+    return payload;
+}
 
 
 //mongoose.model() is used to create a collection with provided name and schema. This function returns a mongoose object.

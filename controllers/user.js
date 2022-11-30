@@ -1,22 +1,53 @@
+const { inputValidation, comparePasswords } = require("../helpers/authorization/inputHelpers");
+const CustomizedError = require("../helpers/error/CustomizedError");
+const { saveJwtToCookie } = require("../helpers/jwt/tokenHelpers");
 const User = require("../models/User");
-const register = async(req, res, next) =>
+const signUp = async(req, res, next) =>
 {
     try
     {
         const {username, email ,password, birthDate, gender } = req.body; //getting necessary informations from request's body
         const user = await User.create({username:username, email:email, password:password, birthDate:birthDate, gender:gender});
         //we created an user with the informations.
-        res.status(200).json({success:true, data:user});
+        saveJwtToCookie(user, res);
     }
     catch(err)
     {
         //catch errors in async process.
-        //Javascript can not catch errors in asynchronous processes. When occurs an error in synchronous process, our request gonna fall to an loop, our frontend application gonna try to send request again and again. Because for javascript can not catch errors in async processes, we can not show a message about error to user. We gonna write a error middleware function but this middleware function is special for error handling, therefore it gonna take a plus param called err. We gonna import it after the routers. Thus, when an error occurs we gonna pass it with next. It gonna fall to error middleware. Anymore we can show message about user.
-        next(err);
+        return next(err);
+    }
+}
+
+
+const login = async(req,res,next) =>
+{
+    try
+    {
+        const {email, password} = req.body;
+        if(inputValidation(email, password) == false) //inputs are blank or not provided.
+        {
+            const error = new CustomizedError(400, "Please provide a valid email and password");
+            return next(error);
+        }
+        const user = await User.findOne({email:email}).select("+password");
+        //the user with this email is exists because it pass middleware.
+        //When we are creating our user model, we marked password's select feature as false. That's mean when making query it does not include the password. It brings a query without password information. But we included password with select function for query to make password compare. 
+        if(comparePasswords(password, user.password) == false)
+        {
+            //The user's password and provided password did not match.
+            const error = new CustomizedError(400, "Your password is wrong");
+            return next(error);
+        }
+        saveJwtToCookie(user, res);
+    }
+    catch(err)
+    {
+        return next(err);
     }
 }
 
 module.exports = {
-    register
+    signUp,
+    login
 }
 //we gonna use these functions in routes therefore we need to export this functions. If we dont export these functions, we can not redirect routes to there functions.
