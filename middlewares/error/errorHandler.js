@@ -3,8 +3,12 @@ const CustomizedError = require("../../helpers/error/CustomizedError");
 
 const errorHandler = (err, req, res, next) =>
 {
-    // const error = new CustomizedError(400, err.message);
-    res.status(err.statusCode||500).json({success:false, message:err.message});
+    let error = new CustomizedError(400, err.message);
+    if(err.message.includes("jwt malformed"))
+    {
+        error = new CustomizedError(401, "Invalid token. You are not authorized to access this route.")
+    }
+    res.status(error.statusCode||500).json({success:false, message:error.message});
 }
 
 module.exports = errorHandler;

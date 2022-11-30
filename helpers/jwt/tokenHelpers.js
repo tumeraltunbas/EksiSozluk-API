@@ -13,8 +13,20 @@ const saveJwtToCookie = (user,res) =>
     .json({success:true, data:user, access_token:token})
 }
 
+const isTokenIncluded = (req) =>
+{
+    //the token is in the request. we can reach to token with authorization key. {authorization:access_token}
+    return req.headers.authorization;
+}
 
+const getToken = (req) =>
+{
+    //we gonna split the authorization value and get the access_token value
+    return req.headers.authorization.split(" ")[1];
+}
 
 module.exports = {
-    saveJwtToCookie
+    saveJwtToCookie,
+    isTokenIncluded,
+    getToken
 }

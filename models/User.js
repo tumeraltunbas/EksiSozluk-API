@@ -35,19 +35,19 @@ const UserSchema = new mongoose.Schema({ //UserSchema is new mongoose.Schema
         enum: ["user", "admin"],
         default:"user"
     },
-    following:{
+    following:[{
         type:mongoose.Schema.ObjectId,
         ref:"user",
-    },
-    followers:{
+    }],
+    followers:[{
         type:mongoose.Schema.ObjectId,
         ref:"user",
-    },
+    }],
     followingCount: {
         type:Number,
         default:0
     },
-    followerCount: {
+    followersCount: {
         type:Number,
         default:0
     },
@@ -108,6 +108,12 @@ UserSchema.methods.createPayload = function()
     }
     return payload;
 }
+
+// UserSchema.pre("save", async function(next)
+// {
+//     const user = await User.findById(req.user.id);
+
+// });
 
 
 //mongoose.model() is used to create a collection with provided name and schema. This function returns a mongoose object.
