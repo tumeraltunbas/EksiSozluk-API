@@ -51,6 +51,10 @@ const UserSchema = new mongoose.Schema({ //UserSchema is new mongoose.Schema
         type:Number,
         default:0
     },
+    favorites: [{
+        type:mongoose.Schema.ObjectId,
+        ref:"Entry"
+    }],
     profilePicture: {
         type:String,
         default:"default.png"

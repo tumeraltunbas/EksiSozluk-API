@@ -1,5 +1,7 @@
 const User = require("../../models/User")
 const CustomizedError = require("../../helpers/error/CustomizedError");
+const Title = require("../../models/Title");
+const { findOne } = require("../../models/Entry");
 const isUserExists = async (req,res, next) =>
 {
 
@@ -29,6 +31,48 @@ const isUserExists = async (req,res, next) =>
     //If user is not null, pass to controller. We did not proide any param to next function, therefore it gonna pass to controller. But if we provided a param to it, it gonna pass to errorHandler.
 }
 
+const isTitleOpened = async(req, res, next)=>
+{
+    const {slug} = req.params;
+    const title = await Title.findOne({slug:slug});
+    if(title == null)
+    {
+        let temp = slug.split("-").toString();
+        temp = temp.replaceAll(",", " ");
+        await Title.create({title:temp, createdBy:req.user.id});
+        return next();
+    }
+    return next();
+}
+
+const isTitleExists = async(req, res, next) =>
+{
+    const {slug} = req.params;
+    const title = await Title.findOne({slug:slug});
+    if(title==null)
+    {
+        const error = new CustomizedError(400, "There is no title like this");
+        return next(error);   
+    }
+    next();
+}
+
+
+const isEntryExistsInTitle = async(req, res, next) =>
+{
+    const {slug, entry_id} = req.params;
+    const title = await Title.findOne({slug:slug});
+    if(!title.entries.includes(entry_id))
+    {
+        const error = new CustomizedError(400, "There is no entry in this title");
+        return next(error);
+    }
+    next();
+}
+
 module.exports = {
-    isUserExists
+    isUserExists,
+    isTitleOpened,
+    isTitleExists,
+    isEntryExistsInTitle
 }

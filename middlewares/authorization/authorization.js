@@ -2,6 +2,7 @@
 const jsonwebtoken = require("jsonwebtoken");
 const CustomizedError = require("../../helpers/error/CustomizedError");
 const { isTokenIncluded, getToken } = require("../../helpers/jwt/tokenHelpers");
+const Entry = require("../../models/Entry");
 
 const getAccessToRoute = (req, res, next) =>
 {
@@ -23,6 +24,19 @@ const getAccessToRoute = (req, res, next) =>
     next();
 }
 
+const getEntryOwnerAccess = async (req, res, next) =>
+{
+    const {entry_id} = req.params;
+    const entry = await Entry.findById(entry_id);
+    if(entry.user != req.user.id)
+    {
+        const error = new CustomizedError(403, "You are not the owner of entry");
+        return next(error);
+    }
+    next();
+}
+
 module.exports = {
-    getAccessToRoute
+    getAccessToRoute,
+    getEntryOwnerAccess
 }
