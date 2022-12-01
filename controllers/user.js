@@ -100,17 +100,6 @@ const follow = async(req, res, next) =>
     {
         return next(err);
     }
-
-
-    const {user_id} = req.params;
-    const userToFollow = await User.findById(user_id);
-    userToFollow.followers.push(req.user.id);
-    userToFollow.followersCount +=1;
-    await userToFollow.save();
-
-
-
-
 }
 
 
