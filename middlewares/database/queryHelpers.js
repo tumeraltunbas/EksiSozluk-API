@@ -1,7 +1,6 @@
 const User = require("../../models/User")
 const CustomizedError = require("../../helpers/error/CustomizedError");
 const Title = require("../../models/Title");
-const { findOne } = require("../../models/Entry");
 const isUserExists = async (req,res, next) =>
 {
 
@@ -33,6 +32,8 @@ const isUserExists = async (req,res, next) =>
 
 const isTitleOpened = async(req, res, next)=>
 {
+    /*In eksisozluk to create a title, you have to create a entry in it. 
+    We gonna check some things, if title is not opened, we gonna create a a title and add entry to it.*/
     const {slug} = req.params;
     const title = await Title.findOne({slug:slug});
     if(title == null)
@@ -47,6 +48,7 @@ const isTitleOpened = async(req, res, next)=>
 
 const isTitleExists = async(req, res, next) =>
 {
+    //If title is not exist, we gonna throw an error.
     const {slug} = req.params;
     const title = await Title.findOne({slug:slug});
     if(title==null)
@@ -60,6 +62,7 @@ const isTitleExists = async(req, res, next) =>
 
 const isEntryExistsInTitle = async(req, res, next) =>
 {
+    //Is there entry in title
     const {slug, entry_id} = req.params;
     const title = await Title.findOne({slug:slug});
     if(!title.entries.includes(entry_id))

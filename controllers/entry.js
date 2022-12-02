@@ -5,13 +5,14 @@ const User = require("../models/User");
 
 const createEntry = async(req, res, next) =>
 {
-    //content, user, title
     try
     {
-        const {slug} = req.params;
-        const {content} = req.body;
-        const title = await Title.findOne({slug:slug});
-        const entry =  await Entry.create({content:content, user:req.user.id, title:title._id});
+        const {slug} = req.params; //taking title information
+        const {content} = req.body; //taking content of entry
+        const title = await Title.findOne({slug:slug}); //pull title from database
+        const entry =  await Entry.create({content:content, user:req.user.id, title:title._id}); //create entry
+        title.entries.push(entry);
+        await title.save();
         res.status(200).json({success:true, data:entry});
     }
     catch(err)
@@ -29,11 +30,13 @@ const likeEntry = async(req, res, next) =>
         const entry = await Entry.findById(entry_id);
         if(entry.likes.includes(req.user.id))
         {
+            //if user already liked this entry
             const error = new CustomizedError(400, "You already like this entry");
             return next(error);   
         }
         if(entry.dislikes.includes(req.user.id))
         {
+            //remove dislike if user disliked this entry
             entry.dislikes.splice(entry.dislikes.indexOf(req.user.id),1);
         }
         entry.likes.push(req.user.id);
@@ -86,6 +89,7 @@ const undoLikeEntry = async (req, res, next) =>
         const entry = await Entry.findById(entry_id);
         if(!entry.likes.includes(req.user.id))
         {
+            //if user did not like this entry
             const error = new CustomizedError(400, "You already did not like this entry");
             return next(error);
         }
@@ -108,6 +112,7 @@ const undoDislikeEntry = async(req, res, next) =>
         const entry = await Entry.findById(entry_id);
         if(!entry.dislikes.includes(req.user.id))
         {
+            //if user did not dislike this entry
             const error = new CustomizedError(400, "You already did not dislike this entry");
             return next(error);
         }
@@ -126,9 +131,9 @@ const editEntry = async (req, res, next) =>
 {
     try
     {
-        const {entry_id} = req.params;
-        const {content} = req.body;
-        const entry = await Entry.findByIdAndUpdate(entry_id, {content:content}, {runValidators:true, new:true});
+        const {entry_id} = req.params; //taking entry id for edit
+        const {content} = req.body; //taking content of entry
+        const entry = await Entry.findByIdAndUpdate(entry_id, {content:content}, {runValidators:true, new:true}); //update
         res.status(200).json({success:true, data:entry, message:"Edit entry successfull"});
     }
     catch(err)
@@ -145,8 +150,9 @@ const favoriteEntry = async(req, res, next) =>
         const user = await User.findById(req.user.id);
         if(user.favorites.includes(entry_id))
         {
+            //if user already added to favorites this entry
             const error = new CustomizedError(400, "This entry already in your favorites");
-            return next(err);
+            return next(error);
         }
         user.favorites.push(entry_id);
         await user.save();

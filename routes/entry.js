@@ -3,12 +3,12 @@ const { isTitleOpened, isEntryExistsInTitle } = require("../middlewares/database
 const router = require("express").Router({mergeParams:true});
 const {createEntry,likeEntry,dislikeEntry,undoLikeEntry,undoDislikeEntry,editEntry,favoriteEntry} = require("../controllers/entry");
 
-router.post("/entry",[getAccessToRoute, isTitleOpened] , createEntry);
-router.get("/:entry_id/like", [getAccessToRoute, isEntryExistsInTitle], likeEntry);
-router.get("/:entry_id/undolike", [getAccessToRoute, isEntryExistsInTitle], undoLikeEntry);
-router.get("/:entry_id/dislike", [getAccessToRoute, isEntryExistsInTitle], dislikeEntry);
-router.get("/:entry_id/undodislike", [getAccessToRoute, isEntryExistsInTitle], undoDislikeEntry);
-router.put("/:entry_id/edit", [getAccessToRoute, isEntryExistsInTitle, getEntryOwnerAccess], editEntry);
-router.get("/:entry_id/favorite", [getAccessToRoute, isEntryExistsInTitle], favoriteEntry);
+router.post("/entry",[getAccessToRoute, isTitleOpened] , createEntry); //creating an entry route
+router.get("/:entry_id/like", [getAccessToRoute, isEntryExistsInTitle], likeEntry); //like an entry
+router.get("/:entry_id/undolike", [getAccessToRoute, isEntryExistsInTitle], undoLikeEntry); //undo like an entry
+router.get("/:entry_id/dislike", [getAccessToRoute, isEntryExistsInTitle], dislikeEntry); //dislike an entry
+router.get("/:entry_id/undodislike", [getAccessToRoute, isEntryExistsInTitle], undoDislikeEntry); //undo dislike an entry
+router.put("/:entry_id/edit", [getAccessToRoute, isEntryExistsInTitle, getEntryOwnerAccess], editEntry); //edit an entry
+router.get("/:entry_id/favorite", [getAccessToRoute, isEntryExistsInTitle], favoriteEntry); //add to favorites an entry
 
 module.exports = router;

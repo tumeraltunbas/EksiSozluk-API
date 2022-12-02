@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs") //importing bcryptjs library for password hashing
 const jsonwebtoken = require("jsonwebtoken");
+const randomString = require("randomstring");
+const Entry = require("./Entry");
 
 const UserSchema = new mongoose.Schema({ //UserSchema is new mongoose.Schema
     username:{
@@ -69,6 +71,12 @@ const UserSchema = new mongoose.Schema({ //UserSchema is new mongoose.Schema
     blocked: {
         type:Boolean,
         default:false
+    },
+    resetPasswordToken: {
+        type:String
+    },
+    resetPasswordTokenExpires: {
+        type:Date
     }
 });
 
@@ -113,12 +121,39 @@ UserSchema.methods.createPayload = function()
     return payload;
 }
 
-// UserSchema.pre("save", async function(next)
-// {
-//     const user = await User.findById(req.user.id);
+//Reset Password
+UserSchema.methods.generateResetPasswordToken = function()
+{
+    const {RESET_PASSWORD_TOKEN_EXPIRES} = process.env;
+    const random = randomString.generate(15);
+    this.resetPasswordToken = bcrypt.hashSync(random, 10);
+    this.resetPasswordTokenExpires = new Date(Date.now() + parseInt(RESET_PASSWORD_TOKEN_EXPIRES));
+}
 
-// });
 
+//Make isVisible false after a user blocked and when a block opened, make all entries visible
+UserSchema.pre("save", async function(next)
+{
+    if(!this.isModified("blocked"))
+    {
+        //If user's blocked property did not change, continue.
+        next();
+    }
+    //But if user's blocked property changed, we need to change visibility of entry.
+    const entries = await Entry.find({user:this._id}); //finding entries that belong to this user.
+    if(entries == null)
+    {
+        //if entries is null, that's mean user did not create any entry. Therefore we dont need to make invisible something else.
+        next();
+    }
+    for(var entry of entries)
+    {
+        //change entry visible status.
+        entry.isVisible = !entry.isVisible;
+        await entry.save();
+    }
+    next();
+});
 
 //mongoose.model() is used to create a collection with provided name and schema. This function returns a mongoose object.
 const User = mongoose.model("User", UserSchema);

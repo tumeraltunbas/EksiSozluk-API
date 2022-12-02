@@ -1,6 +1,7 @@
 const { inputValidation, comparePasswords } = require("../helpers/authorization/inputHelpers");
 const CustomizedError = require("../helpers/error/CustomizedError");
 const { saveJwtToCookie } = require("../helpers/jwt/tokenHelpers");
+const {mailsender,createMailConfig} = require("../helpers/mail/nodemailer");
 const User = require("../models/User");
 const signUp = async(req, res, next) =>
 {
@@ -10,6 +11,7 @@ const signUp = async(req, res, next) =>
         const user = await User.create({username:username, email:email, password:password, birthDate:birthDate, gender:gender});
         //we created an user with the informations.
         saveJwtToCookie(user, res);
+        mailsender(createMailConfig(user.email, "Welcome to Our Website", "<p>We just wanted to welcome.</p>"));
     }
     catch(err)
     {
@@ -86,10 +88,10 @@ const follow = async(req, res, next) =>
         //If user is not following
     
         currentUser.following.push(userToFollow.id); //add followed user id to user's following
-        currentUser.followingCount +=1; //increase following count by one
+        currentUser.followingCount = currentUser.following.length; //taking current following count
 
         userToFollow.followers.push(req.user.id); //add user's id to followed user's followers
-        userToFollow.followersCount +=1 //increase followers count by one
+        userToFollow.followersCount = userToFollow.followers.length; //taking current followers count
 
         await currentUser.save();
         await userToFollow.save();
@@ -118,10 +120,11 @@ const unfollow = async(req, res, next) =>
         }
 
         currentUser.following.splice(currentUser.following.indexOf(userToUnfollow.id), 1);
-        // currentUser.followingCount -=1;
+        currentUser.followingCount = currentUser.following.length;
     
         userToUnfollow.followers.splice(userToUnfollow.followers.indexOf(currentUser.id),1);
-        // userToUnfollow.followersCount -=1;
+        userToUnfollow.followersCount = userToUnfollow.followers.length;
+
     
         await currentUser.save();
         await userToUnfollow.save();
@@ -134,12 +137,72 @@ const unfollow = async(req, res, next) =>
     }
 }
 
+const forgotPassword = async (req, res, next) =>
+{
+    /*
+        for the successfully password reset process, we need to follow several steps
+        1 - Create a random string and hash it.
+        2 - Save it to user's reset password property and determine a reset password token expires. After this time the token will be invalid.
+        3 - Create a url with user's reset password token.
+        4 - Send email this url to user.
+        5 - If user send request with this url, make reset password process.
+    */
+    const {email} = req.body;
+    const user = await User.findOne({email:email}); //find user from email
+   try
+   {
+    user.generateResetPasswordToken(); //generate reset password token and assign it to properties
+    await user.save(); //save, therefore the token and expires will be saved to user.
+    const url = `http://localhost:5002/user/resetpassword?resetpasswordtoken=${user.resetPasswordToken}`
+    //we createad a url that provides a reset password token query. 
+    mailsender(createMailConfig(user.email, "About your password reset request", `<a href='${url}'>Link</a>`));
+    //we are sending this url to user
+    res.status(200).json({success:true, message:`The reset password link sent to ${user.email}`});
+   }
+   catch(err)
+   {
+    //if any error occurs in generate or url processes. we gonna make null these properties for security purposes.
+    user.resetPasswordToken = null;
+    user.resetPasswordTokenExpires = null;
+    await user.save();
+    return next(err);
+   }
+}
+
+const resetPassword = async (req, res, next) =>
+{
+    try
+    {
+        const {resetpasswordtoken} = req.query; //taking the reset password token from url
+        const {password} = req.body; //taking new password from body
+        const user = await User.findOne({resetPasswordToken:resetpasswordtoken, resetPasswordTokenExpires: {$gt:Date.now()}});
+        //we are finding user with this token
+        if(user==null)
+        {
+            //if user is not exists
+            const error = new CustomizedError(400, "It's a invalid token or your token has been expired");
+            return next(error);
+        }
+        user.password = password; //change user's password with new password
+        user.resetPasswordToken = null; //after the change, make reset password token and expires values null.
+        user.resetPasswordTokenExpires = null;
+        await user.save();
+        res.status(200).json({success:true, data:user, message:"Password successfully changed"});
+    }
+    catch(err)
+    {
+        return next();
+    }
+}
+
 module.exports = {
     signUp,
     login,
     profile,
     logout,
     follow,
-    unfollow
+    unfollow,
+    forgotPassword,
+    resetPassword
 }
 //we gonna use these functions in routes therefore we need to export this functions. If we dont export these functions, we can not redirect routes to there functions.

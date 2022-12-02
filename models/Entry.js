@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Title = require("./Title");
 
 const EntrySchema = new mongoose.Schema({
     content: {
@@ -47,26 +46,6 @@ const EntrySchema = new mongoose.Schema({
         default:true
     }
 });
-
-EntrySchema.pre("save", async function(next)
-{
-    if(!this.isModified("user"))
-    {
-        return next();
-    }
-    try
-    {
-        const title = await Title.findById(this.title);
-        title.entries.push(this._id);
-        await title.save();
-        next();
-    }
-    catch(err)
-    {
-        next(err);
-    }  
-});
-
 
 const Entry = mongoose.model("Entry", EntrySchema);
 //it creates a entries collection with EntrySchema
