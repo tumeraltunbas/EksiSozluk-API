@@ -3,6 +3,7 @@ const CustomizedError = require("../helpers/error/CustomizedError");
 const { saveJwtToCookie } = require("../helpers/jwt/tokenHelpers");
 const {mailsender,createMailConfig} = require("../helpers/mail/nodemailer");
 const User = require("../models/User");
+
 const signUp = async(req, res, next) =>
 {
     try
@@ -54,6 +55,20 @@ const profile = async(req,res,next) =>
     {
         const user = await User.findById(req.user.id);  //finding the user under the request thanks to jwt
         res.status(200).json({success:true, data:user});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
+const editProfile = async (req, res, next) =>
+{
+    try
+    {
+        const {about} = req.body;
+        const user = await User.findByIdAndUpdate(req.user.id, {about:about} ,{new:true, runValidators:true});
+        res.status(200).json({success:true, data:user, message:"Profile edit successfull"})
     }
     catch(err)
     {
@@ -199,6 +214,7 @@ module.exports = {
     signUp,
     login,
     profile,
+    editProfile,
     logout,
     follow,
     unfollow,
