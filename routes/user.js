@@ -8,8 +8,8 @@ router.post("/login", isUserExists, login); //we created a login route. It is po
 router.get("/profile", getAccessToRoute, profile); //we created a profile route. The user can access profile informations from here.
 router.put("/editprofile", getAccessToRoute, editProfile);
 router.get("/logout", getAccessToRoute, logout); //we created a logout route. The user's access token will change with null.
-router.get("/follow/:user_id", [getAccessToRoute, isUserExists], follow); //follow route
-router.get("/unfollow/:user_id",[getAccessToRoute, isUserExists], unfollow); //unfollow route
+router.get("/:user_id/follow", [getAccessToRoute, isUserExists], follow); //follow route
+router.get("/:user_id/unfollow",[getAccessToRoute, isUserExists], unfollow); //unfollow route
 router.post("/forgotpassword", isUserExists, forgotPassword); //if user forget his password, gonna send request to this route.
 router.put("/resetpassword", resetPassword); //If user send request this url with valid parameters we gonna allow to change password process.
 module.exports = router; //exported this router to use it in main router page.

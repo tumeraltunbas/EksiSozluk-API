@@ -164,6 +164,20 @@ const favoriteEntry = async(req, res, next) =>
     }
 }
 
+const hideEntry = async (req, res, next) =>
+{
+    try
+    {
+        const {entry_id} = req.params;
+        const entry = await Entry.findById(entry_id);
+        hide(entry, res, next);
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
 module.exports = {
     createEntry,
     likeEntry,
@@ -171,5 +185,6 @@ module.exports = {
     undoLikeEntry,
     undoDislikeEntry,
     editEntry,
-    favoriteEntry
+    favoriteEntry,
+    hideEntry,
 }

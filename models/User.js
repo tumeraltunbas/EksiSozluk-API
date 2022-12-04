@@ -89,7 +89,7 @@ UserSchema.pre("save", function(next)
         //If user updated but password did not changed, no need to password hash again, because password already hashed.
         next(); //continue to saving process.
     }
-    //If password is changed, we gonna hash password with bcrypt.
+    //If password changed, we gonna hash password with bcrypt.
     const salt = bcrypt.genSaltSync(10); //we created a salt for password hashing.
     //The salt appends to beginning of the hash for increasing security.
     const hashedPassword = bcrypt.hashSync(this.password, salt); //we hashed the user's password.

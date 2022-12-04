@@ -1,3 +1,4 @@
+const { visible, hide } = require("../helpers/functionHelpers/functionHelpers");
 const Title = require("../models/Title");
 
 const getTitle = async(req, res, next) =>
@@ -17,6 +18,37 @@ const getTitle = async(req, res, next) =>
 }
 
 
+const hideTitle = async (req, res, next) =>
+{
+    try
+    {
+        const {slug} = req.params;
+        const title = await Title.findOne({slug:slug});
+        // console.log("burada");
+        hide(title, res, next);
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
+const visibleTitle = async (req, res, next) =>
+{
+    try
+    {
+        const {slug} = req.params;
+        const title = await Title.findOne({slug:slug});
+        visible(title, res, next);
+    }
+    catch(err)
+    {
+        return next(err)
+    }
+}
+
 module.exports = {
     getTitle,
+    hideTitle,
+    visibleTitle
 }

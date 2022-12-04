@@ -1,7 +1,7 @@
-const { getAccessToRoute,getEntryOwnerAccess } = require("../middlewares/authorization/authorization");
+const { getAccessToRoute,getEntryOwnerAccess, getAdminAccess } = require("../middlewares/authorization/authorization");
 const { isTitleOpened, isEntryExistsInTitle } = require("../middlewares/database/queryHelpers");
 const router = require("express").Router({mergeParams:true});
-const {createEntry,likeEntry,dislikeEntry,undoLikeEntry,undoDislikeEntry,editEntry,favoriteEntry} = require("../controllers/entry");
+const {createEntry,likeEntry,dislikeEntry,undoLikeEntry,undoDislikeEntry,editEntry,favoriteEntry,hideEntry} = require("../controllers/entry");
 
 router.post("/entry",[getAccessToRoute, isTitleOpened] , createEntry); //creating an entry route
 router.get("/:entry_id/like", [getAccessToRoute, isEntryExistsInTitle], likeEntry); //like an entry
@@ -10,5 +10,6 @@ router.get("/:entry_id/dislike", [getAccessToRoute, isEntryExistsInTitle], disli
 router.get("/:entry_id/undodislike", [getAccessToRoute, isEntryExistsInTitle], undoDislikeEntry); //undo dislike an entry
 router.put("/:entry_id/edit", [getAccessToRoute, isEntryExistsInTitle, getEntryOwnerAccess], editEntry); //edit an entry
 router.get("/:entry_id/favorite", [getAccessToRoute, isEntryExistsInTitle], favoriteEntry); //add to favorites an entry
+router.get("/:entry_id/hide", [isEntryExistsInTitle, getAccessToRoute, getAdminAccess], hideEntry);
 
 module.exports = router;

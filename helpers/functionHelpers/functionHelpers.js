@@ -41,8 +41,28 @@ const hide = async(model, res, next) =>
     }
 }
 
+const visible = async (model, res, next) =>
+{
+    try
+    {
+        if(model.isVisible == true)
+        {
+            const error = new CustomizedError(400, "This is already visible");
+            return next(error);
+        }
+        model.isVisible=true;
+        await model.save();
+        res.status(200).json({success:true, message:"Visible is successfull"});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
 
 module.exports = {
     blockHelper,
-    hide
+    hide,
+    visible
 }

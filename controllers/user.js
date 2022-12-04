@@ -157,7 +157,7 @@ const forgotPassword = async (req, res, next) =>
     /*
         for the successfully password reset process, we need to follow several steps
         1 - Create a random string and hash it.
-        2 - Save it to user's reset password property and determine a reset password token expires. After this time the token will be invalid.
+        2 - Save it to user's reset password property and determine a reset password token expires time. After this time the token will be invalid.
         3 - Create a url with user's reset password token.
         4 - Send email this url to user.
         5 - If user send request with this url, make reset password process.
