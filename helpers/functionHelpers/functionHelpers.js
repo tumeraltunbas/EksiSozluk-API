@@ -60,7 +60,6 @@ const visible = async (model, res, next) =>
     }
 }
 
-
 module.exports = {
     blockHelper,
     hide,

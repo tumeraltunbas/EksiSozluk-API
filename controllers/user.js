@@ -3,6 +3,7 @@ const CustomizedError = require("../helpers/error/CustomizedError");
 const { saveJwtToCookie } = require("../helpers/jwt/tokenHelpers");
 const {mailsender,createMailConfig} = require("../helpers/mail/nodemailer");
 const User = require("../models/User");
+const path = require("path");
 
 const signUp = async(req, res, next) =>
 {
@@ -210,6 +211,37 @@ const resetPassword = async (req, res, next) =>
     }
 }
 
+const upload = async (req, res, next) =>
+{
+    try
+    {
+        if(req.files == null)
+        {
+            const error = new CustomizedError(400, "You have to provide a image");
+            return next(error);
+        }
+        const file = req.files.file; //the name of file input = file
+        let uploadPath = path.join(path.dirname(require.main.filename), "/public/uploads", file.name);
+        const allowedTypes = ["image/png", "image/jpg", "image/jpeg"];
+        if(!allowedTypes.includes(file.mimetype))
+        {
+            const error = new CustomizedError(400, "Unsupported file type");
+            return next(error);
+        }
+        file.mv(uploadPath, function(err)
+        {
+            if(err)
+                return next(err);
+        });
+        const user = await User.findByIdAndUpdate(req.user.id, {"profilePicture": file.name}, {new:true, runValidators:true});
+        res.status(200).json({success:true, data:user, message:"Profile picture successfully changed"});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
 module.exports = {
     signUp,
     login,
@@ -219,6 +251,7 @@ module.exports = {
     follow,
     unfollow,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    upload
 }
 //we gonna use these functions in routes therefore we need to export this functions. If we dont export these functions, we can not redirect routes to there functions.

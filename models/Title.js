@@ -72,7 +72,7 @@ TitleSchema.pre("save", async function(next)
         }
     }
     next();
-})
+}); 
 
 const Title = mongoose.model("Title", TitleSchema);
 //It creates a collection called titles with TitleSchema.

@@ -2,6 +2,7 @@ const CustomizedError = require("../helpers/error/CustomizedError");
 const Entry = require("../models/Entry");
 const Title = require("../models/Title");
 const User = require("../models/User");
+const {hide, visible} = require("../helpers/functionHelpers/functionHelpers");
 
 const createEntry = async(req, res, next) =>
 {
@@ -178,6 +179,20 @@ const hideEntry = async (req, res, next) =>
     }
 }
 
+const visibleEntry = async(req, res, next) =>
+{
+    try
+    {
+        const {entry_id} = req.params;
+        const entry = await Entry.findById(entry_id);
+        visible(entry, res, next);
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
 module.exports = {
     createEntry,
     likeEntry,
@@ -187,4 +202,5 @@ module.exports = {
     editEntry,
     favoriteEntry,
     hideEntry,
+    visibleEntry
 }
