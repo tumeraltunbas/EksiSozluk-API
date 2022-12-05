@@ -39,11 +39,11 @@ const UserSchema = new mongoose.Schema({ //UserSchema is new mongoose.Schema
     },
     following:[{
         type:mongoose.Schema.ObjectId,
-        ref:"user",
+        ref:"User",
     }],
     followers:[{
         type:mongoose.Schema.ObjectId,
-        ref:"user",
+        ref:"User",
     }],
     followingCount: {
         type:Number,

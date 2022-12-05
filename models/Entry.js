@@ -27,6 +27,12 @@ const EntrySchema = new mongoose.Schema({
             ref:"User",
         }
     ],
+    dislikes: [
+        {
+            type:mongoose.Schema.ObjectId,
+            ref:"User",
+        }
+    ],
     likeCount:{
         type:Number,
         default:0
@@ -35,16 +41,11 @@ const EntrySchema = new mongoose.Schema({
         type:Number,
         default:0
     },
-    dislikes: [
-        {
-            type:mongoose.Schema.ObjectId,
-            ref:"User",
-        }
-    ],
     isVisible: {
         type:Boolean,
         default:true
     }
+    
 });
 
 const Entry = mongoose.model("Entry", EntrySchema);

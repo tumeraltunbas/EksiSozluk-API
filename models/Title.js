@@ -6,12 +6,13 @@ const TitleSchema = new mongoose.Schema({
     title:{
         type:String,
         required:[true, "You have to provide a name to title"],
-        minlength:[1, "You have to provide at least one character for title"]
+        minlength:[1, "You have to provide at least one character for title"],
+        unique:true
     },
     entries: [{
         type:mongoose.Schema.ObjectId,
         required:[true, "At least one entry is required to create a title"],
-        ref:"User"
+        ref:"Entry"
     }],
     followers: [
         {
@@ -64,7 +65,15 @@ TitleSchema.pre("save", async function(next)
 {
     if(this.isModified("isVisible"))
     {
-        const entries = await Entry.find({title:this._id});
+        let entries;
+        if(this.isVisible == false)
+        {
+            entries = await Entry.find({title:this._id}).distinct({isVisible:false});
+        }
+        else
+        {
+            entries = await Entry.find({title:this._id}).distinct({isVisible:true});
+        }
         for(var entry of entries)
         {
             entry.isVisible = !entry.isVisible;
