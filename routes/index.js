@@ -4,8 +4,10 @@ const userRoute = require("./user");
 //We can define other routers in it with router.use() method.
 const titleRoute = require("./title");
 const adminRoute = require("./admin");
+const { index } = require("../controllers");
 
 
+router.get("/", index);
 router.use("/user", userRoute); //use user route
 router.use("/title", titleRoute); //use title route
 router.use("/admin", adminRoute); //use admin route

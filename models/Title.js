@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const Entry = require("./Entry");
+const random = require("mongoose-simple-random");
 
 const TitleSchema = new mongoose.Schema({
     title:{
@@ -14,6 +15,10 @@ const TitleSchema = new mongoose.Schema({
         required:[true, "At least one entry is required to create a title"],
         ref:"Entry"
     }],
+    entryCount: {
+        type:Number,
+        default:0
+    },
     followers: [
         {
             type:mongoose.Schema.ObjectId,
@@ -65,24 +70,18 @@ TitleSchema.pre("save", async function(next)
 {
     if(this.isModified("isVisible"))
     {
-        let entries;
-        if(this.isVisible == false)
-        {
-            entries = await Entry.find({title:this._id}).distinct({isVisible:false});
-        }
-        else
-        {
-            entries = await Entry.find({title:this._id}).distinct({isVisible:true});
-        }
+        const entries = await Entry.find({title:this._id, hidByAdmin:false});
         for(var entry of entries)
         {
-            entry.isVisible = !entry.isVisible;
+            entry.isVisible = this.isVisible;
             await entry.save();
         }
     }
     next();
-}); 
+});
 
+
+TitleSchema.plugin(random);
 const Title = mongoose.model("Title", TitleSchema);
 //It creates a collection called titles with TitleSchema.
 

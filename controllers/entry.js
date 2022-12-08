@@ -7,20 +7,13 @@ const {hide, visible} = require("../helpers/functionHelpers/functionHelpers");
 const createEntry = async(req, res, next) =>
 {
     try
-    {
-        // const {slug} = req.params; //taking title information
-        // const {content} = req.body; //taking content of entry
-        // const title = await Title.findOne({slug:slug}); //pull title from database
-        // const entry =  await Entry.create({content:content, user:req.user.id, title:title._id}); //create entry
-        // title.entries.push(entry);
-        // await title.save();
-        // res.status(200).json({success:true, data:entry});
-    
+    {    
         const {q} = req.query;
         const {content} = req.body;
         const title = await Title.findOne({title:q});
         const entry = await Entry.create({content:content, user:req.user.id, title:title._id});
         title.entries.push(entry);
+        title.entryCount = title.entries.length;
         await title.save();
         res.status(200).json({success:true, data:entry});
     }
@@ -142,7 +135,7 @@ const editEntry = async (req, res, next) =>
     {
         const {entry_id} = req.params; //taking entry id for edit
         const {content} = req.body; //taking content of entry
-        const entry = await Entry.findByIdAndUpdate(entry_id, {content:content}, {runValidators:true, new:true}); //update
+        const entry = await Entry.findByIdAndUpdate(entry_id, {content:content, lastEdited:Date.now()}, {runValidators:true, new:true}); //update
         res.status(200).json({success:true, data:entry, message:"Edit entry successfull"});
     }
     catch(err)
@@ -201,6 +194,22 @@ const visibleEntry = async(req, res, next) =>
     }
 }
 
+const getEntriesBySlug = async(req, res, next) =>
+{
+    try
+    {
+        const {slug} = req.params;
+        const title = await Title.findOne({slug:slug});
+        const entries = await Entry.find({title:title.id});
+        res.status(200).json({success:true, data:entries});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+
+
 module.exports = {
     createEntry,
     likeEntry,
@@ -210,5 +219,6 @@ module.exports = {
     editEntry,
     favoriteEntry,
     hideEntry,
-    visibleEntry
+    visibleEntry,
+    getEntriesBySlug
 }

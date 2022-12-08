@@ -41,11 +41,18 @@ const EntrySchema = new mongoose.Schema({
         type:Number,
         default:0
     },
+    lastEdited: {
+        type:Date,
+        default:null
+    },
     isVisible: {
         type:Boolean,
         default:true
+    },
+    hidByAdmin: {
+        type:Boolean,
+        default:false
     }
-    
 });
 
 const Entry = mongoose.model("Entry", EntrySchema);

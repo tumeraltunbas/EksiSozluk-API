@@ -9,7 +9,7 @@ const getAccessToRoute = (req, res, next) =>
 {
     const {JWT_SECRET} = process.env;
     //Before the authorization check, we need to check something.
-    if(isTokenIncluded(req)==undefined)
+    if(!isTokenIncluded(req))
     {
         //If token is not included pass error to errorHandler.
         const error = new CustomizedError(400, "Token is not provided");
